@@ -1,0 +1,51 @@
+<!DOCTYPE html> 
+<link rel="stylesheet" href="style.css">
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Client</title>
+</head>
+<body>
+  <h1>Chat Client</h1>
+  <div>
+    <label for="userId">Enter your User ID:</label>
+    <input type="text" id="userId">
+    <button id="connect">Connect</button>
+  </div>
+  <div id="chat" style="display:none;">
+    <h2>Chat Room</h2>
+    <div id="messages" style="border: 1px solid #ccc; height: 300px; overflow-y: scroll;"></div>
+    <input type="text" id="message" placeholder="Type a message...">
+    <button id="send">Send</button>
+  </div>
+  <script>
+    let socket;
+
+    document.getElementById('connect').onclick = () => {
+      const userId = document.getElementById('userId').value;
+      socket = new WebSocket(`ws://localhost:8080?userId=${userId}`);
+
+      socket.onopen = () => {
+        document.getElementById('chat').style.display = 'block';
+        document.getElementById('connect').disabled = true;
+      };
+
+      socket.onmessage = (event) => {
+        const messagesDiv = document.getElementById('messages');
+        messagesDiv.innerHTML += `<p>${event.data}</p>`;
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      };
+
+      socket.onclose = () => alert("Connection closed.");
+      socket.onerror = () => alert("An error occurred.");
+    };
+
+    document.getElementById('send').onclick = () => {
+      const message = document.getElementById('message').value;
+      socket.send(message);
+      document.getElementById('message').value = '';
+    };
+  </script>
+</body>
+</html>
